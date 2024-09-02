@@ -89,8 +89,9 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
             let scale2 = scale / minScale
             imageView.transform = CGAffineTransform(scaleX: scale2, y: scale2)
             if scale2 > 1 {
-                DispatchQueue.main.async {
-                    self.scrollView.bringSubviewToFront(imageView.superview!) // TODO: Remove force unwrap
+                DispatchQueue.main.async { [weak self] in
+                    guard let containerView = imageView.superview else { return }
+                    self?.scrollView.bringSubviewToFront(containerView)
                 }
             }
         }
