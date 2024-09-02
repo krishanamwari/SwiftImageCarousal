@@ -9,7 +9,7 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     private var imageViews: [UIImageView] = []
     
     private let minScale: CGFloat = 0.75 // Inverse zooming factor of centre tile, 0 < value < 1
-    private let imageScaleFactor: CGFloat = 0.60 // Adjust this to scale the size of image with ratio to width of view
+    private var imageScaleFactor: CGFloat = 0.60 // Adjust this to scale the size of image with ratio to width of view
     private let cornerRadius: CGFloat = 15.0  // Adjust corner radius as needed
     
     // Initializer to set up the carousel
@@ -38,7 +38,15 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
         
         addSubview(scrollView)
         
-        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
+        var imageWidth: CGFloat = bounds.size.width * imageScaleFactor
+        
+        
+        let height = bounds.size.height
+        let maxBreadthMinHeight = bounds.size.width * imageScaleFactor / minScale + 35
+        if maxBreadthMinHeight > height {
+            imageWidth = (height - 35) * minScale
+            imageScaleFactor = imageWidth / bounds.size.width
+        }
         let imageHeight: CGFloat = imageWidth // Square images
         
         // Add images to ScrollView
@@ -83,17 +91,21 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     private func updateImageViewScales() {
         let centerX = scrollView.contentOffset.x + scrollView.frame.size.width / 2
         
-        for imageView in imageViews {
+        var maxZoomScale = 0.0
+        var maxScaleIndex = 0
+        for (i,imageView) in imageViews.enumerated() {
             let offset = abs(centerX - (imageView.superview?.center.x ?? 0))
             let scale = max(1 - offset / scrollView.frame.size.width, minScale)
-            let scale2 = scale / minScale
-            imageView.transform = CGAffineTransform(scaleX: scale2, y: scale2)
-            if scale2 > 1 {
-                DispatchQueue.main.async { [weak self] in
-                    guard let containerView = imageView.superview else { return }
-                    self?.scrollView.bringSubviewToFront(containerView)
-                }
+            let zoomScale = scale / minScale
+            imageView.transform = CGAffineTransform(scaleX: zoomScale, y: zoomScale)
+            if maxZoomScale <= zoomScale {
+                maxZoomScale = zoomScale
+                maxScaleIndex = i
             }
+        }
+        DispatchQueue.main.async { [weak self] in
+            guard let containerView = self?.imageViews[maxScaleIndex].superview else { return }
+            self?.scrollView.bringSubviewToFront(containerView)
         }
     }
     
