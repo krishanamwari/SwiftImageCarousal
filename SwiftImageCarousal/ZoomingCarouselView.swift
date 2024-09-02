@@ -1,9 +1,3 @@
-//
-//  ZoomingCarouselView.swift
-//  SwiftImageCarousal
-//
-//  Created by Krishana Maheshwari on 02/09/24.
-//
 import UIKit
 
 class ZoomingCarouselView: UIView, UIScrollViewDelegate {
@@ -13,6 +7,10 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     
     private var images: [String] = []
     private var imageViews: [UIImageView] = []
+    
+    private let minScale: CGFloat = 0.75 // Inverse zooming factor of centre tile, 0 < value < 1
+    private let imageScaleFactor: CGFloat = 0.60 // Adjust this to scale the size of image with ratio to width of view
+    private let cornerRadius: CGFloat = 15.0  // Adjust corner radius as needed
     
     // Initializer to set up the carousel
     init(frame: CGRect, images: [String]) {
@@ -35,27 +33,32 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
         scrollView.frame = bounds
         scrollView.isPagingEnabled = false
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.bounces = false // Disable bounce effect
         scrollView.delegate = self
         
         addSubview(scrollView)
         
-        let imageWidth: CGFloat = bounds.size.width * 0.75
+        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
         let imageHeight: CGFloat = imageWidth // Square images
         
         // Add images to ScrollView
         for i in 0..<images.count {
+            let containerView = UIView()
             let imageView = UIImageView()
             imageView.image = UIImage(named: images[i])
             imageView.contentMode = .scaleAspectFill
             imageView.clipsToBounds = true
+            imageView.layer.cornerRadius = cornerRadius  // Set rounded corners
             
             let xPos = CGFloat(i) * imageWidth
-            imageView.frame = CGRect(x: xPos, y: (bounds.size.height - imageHeight) / 2, width: imageWidth, height: imageHeight)
-            
-            scrollView.addSubview(imageView)
+            containerView.frame = CGRect(x: xPos, y: (bounds.size.height - imageHeight) / 2, width: imageWidth, height: imageHeight)
+            imageView.frame = CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)
+            scrollView.addSubview(containerView)
+            containerView.addSubview(imageView)
             imageViews.append(imageView)
         }
         
+        // Calculate total width considering zoom effect
         let totalWidth = imageWidth * CGFloat(images.count)
         scrollView.contentSize = CGSize(width: totalWidth, height: bounds.size.height)
         scrollView.contentInset = UIEdgeInsets(top: 0, left: (bounds.size.width - imageWidth) / 2, bottom: 0, right: (bounds.size.width - imageWidth) / 2)
@@ -65,8 +68,6 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
         // Configure PageControl
         pageControl.numberOfPages = images.count
         pageControl.currentPage = images.count / 2  // Start with the middle image
-        pageControl.tintColor = .gray
-        pageControl.currentPageIndicatorTintColor = .black
         
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pageControl)
@@ -82,14 +83,20 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
         let centerX = scrollView.contentOffset.x + scrollView.frame.size.width / 2
         
         for imageView in imageViews {
-            let offset = abs(centerX - imageView.center.x)
-            let scale = max(1 - offset / scrollView.frame.size.width, 0.75)
-            imageView.transform = CGAffineTransform(scaleX: scale, y: scale)
+            let offset = abs(centerX - (imageView.superview?.center.x ?? 0))
+            let scale = max(1 - offset / scrollView.frame.size.width, minScale)
+            let scale2 = scale / minScale
+            imageView.transform = CGAffineTransform(scaleX: scale2, y: scale2)
+            if scale2 > 1 {
+                DispatchQueue.main.async {
+                    self.scrollView.bringSubviewToFront(imageView.superview!) // TODO: Remove force unwrap
+                }
+            }
         }
     }
     
     private func snapToNearestImage() {
-        let imageWidth: CGFloat = bounds.size.width * 0.75
+        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
         let offsetX = scrollView.contentOffset.x + scrollView.contentInset.left
         
         let index = round(offsetX / imageWidth)
@@ -101,7 +108,7 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         updateImageViewScales()
         
-        let imageWidth: CGFloat = bounds.size.width * 0.75
+        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
         let pageIndex = round(scrollView.contentOffset.x / imageWidth)
         pageControl.currentPage = Int(pageIndex)
     }
@@ -109,7 +116,7 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         targetContentOffset.pointee = scrollView.contentOffset
         
-        let imageWidth: CGFloat = bounds.size.width * 0.75
+        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
         let offsetX = scrollView.contentOffset.x + scrollView.contentInset.left
         
         let index: CGFloat
@@ -131,7 +138,7 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     }
     
     private func scrollToMiddleImage() {
-        let imageWidth: CGFloat = bounds.size.width * 0.75
+        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
         let middleIndex = CGFloat(images.count / 2)
         let targetX = middleIndex * imageWidth - scrollView.contentInset.left
         
