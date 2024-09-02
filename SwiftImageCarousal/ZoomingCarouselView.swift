@@ -68,14 +68,15 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
         // Configure PageControl
         pageControl.numberOfPages = images.count
         pageControl.currentPage = images.count / 2  // Start with the middle image
-        
+        pageControl.pageIndicatorTintColor = .lightGray
+        pageControl.currentPageIndicatorTintColor = UIScreen.main.traitCollection.userInterfaceStyle == .dark ? .white : .black
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pageControl)
         
         // Center the page control
         NSLayoutConstraint.activate([
             pageControl.centerXAnchor.constraint(equalTo: centerXAnchor),
-            pageControl.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -20)
+            pageControl.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor)
         ])
     }
     
