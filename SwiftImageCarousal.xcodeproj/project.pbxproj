@@ -13,6 +13,7 @@
 		9AEA567A2C85850900078925 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 9AEA56792C85850900078925 /* Base */; };
 		9AEA567C2C85850A00078925 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9AEA567B2C85850A00078925 /* Assets.xcassets */; };
 		9AEA567F2C85850A00078925 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 9AEA567E2C85850A00078925 /* Base */; };
+		9AEA56872C85934C00078925 /* ZoomingCarouselView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AEA56862C85934C00078925 /* ZoomingCarouselView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		9AEA567B2C85850A00078925 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9AEA567E2C85850A00078925 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9AEA56802C85850A00078925 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9AEA56862C85934C00078925 /* ZoomingCarouselView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomingCarouselView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				9AEA567B2C85850A00078925 /* Assets.xcassets */,
 				9AEA567D2C85850A00078925 /* LaunchScreen.storyboard */,
 				9AEA56802C85850A00078925 /* Info.plist */,
+				9AEA56862C85934C00078925 /* ZoomingCarouselView.swift */,
 			);
 			path = SwiftImageCarousal;
 			sourceTree = "<group>";
@@ -138,6 +141,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9AEA56872C85934C00078925 /* ZoomingCarouselView.swift in Sources */,
 				9AEA56772C85850900078925 /* ViewController.swift in Sources */,
 				9AEA56732C85850900078925 /* AppDelegate.swift in Sources */,
 				9AEA56752C85850900078925 /* SceneDelegate.swift in Sources */,
