@@ -14,18 +14,25 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     
     // Initializer to set up the carousel
     init(frame: CGRect, images: [String]) {
-        self.images = images
         super.init(frame: frame)
-        
+        setData(images: images)
+    }
+    
+    init() {
+        super.init(frame: .zero)
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+    func setData(images: [String]) {
+        self.images = images
         setupScrollView()
         setupPageControl()
         updateImageViewScales()
         
         scrollToMiddleImage()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
     }
     
     private func setupScrollView() {
@@ -59,7 +66,7 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
             imageView.layer.cornerRadius = cornerRadius  // Set rounded corners
             
             let xPos = CGFloat(i) * imageWidth
-            containerView.frame = CGRect(x: xPos, y: (bounds.size.height - imageHeight) / 2, width: imageWidth, height: imageHeight)
+            containerView.frame = CGRect(x: xPos, y: (((1/minScale) - 1)*imageHeight)/2, width: imageWidth, height: imageHeight)
             imageView.frame = CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)
             scrollView.addSubview(containerView)
             containerView.addSubview(imageView)
@@ -98,12 +105,14 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
             let scale = max(1 - offset / scrollView.frame.size.width, minScale)
             let zoomScale = scale / minScale
             imageView.transform = CGAffineTransform(scaleX: zoomScale, y: zoomScale)
+            print(maxZoomScale,zoomScale)
             if maxZoomScale <= zoomScale {
                 maxZoomScale = zoomScale
                 maxScaleIndex = i
             }
         }
         DispatchQueue.main.async { [weak self] in
+            self?.pageControl.currentPage = Int(maxScaleIndex)
             guard let containerView = self?.imageViews[maxScaleIndex].superview else { return }
             self?.scrollView.bringSubviewToFront(containerView)
         }
@@ -121,10 +130,6 @@ class ZoomingCarouselView: UIView, UIScrollViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         updateImageViewScales()
-        
-        let imageWidth: CGFloat = bounds.size.width * imageScaleFactor
-        let pageIndex = round(scrollView.contentOffset.x / imageWidth)
-        pageControl.currentPage = Int(pageIndex)
     }
     
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
